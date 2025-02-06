@@ -2,7 +2,7 @@
  * pca9685_servo_driver.h
  *
  *  Created on: Feb 5, 2025
- *      Author: muhta
+ *      Author: Muhtasim Rahman
  */
 
 #ifndef INC_PCA9685_SERVO_DRIVER_H_
