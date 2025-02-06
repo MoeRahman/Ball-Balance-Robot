@@ -129,6 +129,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    /* TEST SIMPLE LCD-TFT APPLICATION HERE*/
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
