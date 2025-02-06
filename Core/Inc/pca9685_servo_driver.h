@@ -49,6 +49,15 @@
 #define PCA9685_PRESCALE_MIN 3   /**< minimum prescale value */
 #define PCA9685_PRESCALE_MAX 255 /**< maximum prescale value */
 
+// Setup driver
+void init();
+void reset();
+// Update & Read PWM Frequency
+void setPWMFreq();
+void getPWMFreq();
+// Update & Read PWM signal
+void setPWM();
+void getPWM();
 
 
 #endif /* INC_PCA9685_SERVO_DRIVER_H_ */

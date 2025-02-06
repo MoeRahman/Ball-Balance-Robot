@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "pca9685_servo_driver.h"
 #include "usb_host.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -80,7 +81,7 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint8_t buffer[48];
 /* USER CODE END 0 */
 
 /**
@@ -122,14 +123,17 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
-
+  init();
+  HAL_Delay(1000);
+  sprintf((char*)buf, "application loop\n");
+  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* TEST SIMPLE LCD-TFT APPLICATION HERE*/
+    
     
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
