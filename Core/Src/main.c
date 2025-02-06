@@ -18,10 +18,12 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "pca9685_servo_driver.h"
 #include "usb_host.h"
-
 /* Private includes ----------------------------------------------------------*/
+#include "pca9685_servo_driver.h"
+#include "stdio.h"
+#include "stdbool.h"
+#include "string.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -81,7 +83,7 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t buffer[48];
+uint8_t buf[48];
 /* USER CODE END 0 */
 
 /**

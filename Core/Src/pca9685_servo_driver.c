@@ -9,6 +9,7 @@
 #include <math.h>
 #include <pca9685_servo_driver.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <stm32f4xx_hal.h>
 
@@ -30,6 +31,8 @@ void init()
 	}else{
 		strcpy((char*)buffer, "DEVICE STATUS:\tNOT READY\r\n");
 	}
+    HAL_UART_Transmit(&huart1, buffer, strlen((char*)buffer), HAL_MAX_DELAY);
+
 }
 
 //  Read from I2C address
