@@ -48,16 +48,20 @@
 
 #define PCA9685_PRESCALE_MIN 3   /**< minimum prescale value */
 #define PCA9685_PRESCALE_MAX 255 /**< maximum prescale value */
+#define PCA9685_MODE1_SLEEP_BIT      4
+#define PCA9685_MODE1_AI_BIT         5
+#define PCA9685_MODE1_RESTART_BIT    7
 
 // Setup driver
 void init();
 void reset();
 // Update & Read PWM Frequency
-void setPWMFreq();
+void setPWMFreq(uint16_t frequncy);
 void getPWMFreq();
-// Update & Read PWM signal
+// Update  PWM signal
 void setPWM();
-void getPWM();
+// Update servo angle
+void setAngle();
 
 
 #endif /* INC_PCA9685_SERVO_DRIVER_H_ */
