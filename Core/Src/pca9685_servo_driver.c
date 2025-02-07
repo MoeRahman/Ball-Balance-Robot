@@ -32,7 +32,7 @@ void init()
 		strcpy((char*)buffer, "DEVICE STATUS:\tNOT READY\r\n");
 	}
     HAL_UART_Transmit(&huart1, buffer, strlen((char*)buffer), HAL_MAX_DELAY);
-
+    
 }
 
 //  Read from I2C address
