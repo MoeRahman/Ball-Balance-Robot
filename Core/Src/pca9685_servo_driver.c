@@ -94,7 +94,7 @@ void setPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
     PWM[2] = OffTime & 0xFF;
     PWM[3] = OffTime>>8;
 
-    HAL_I2C_Mem_Write(&hi2c1, PCA9685_I2C_ADDRESS, registerAddress, 1, pwm, 4, HAL_MAX_DELAY);
+    HAL_I2C_Mem_Write(&hi2c3, PCA9685_I2C_ADDRESS, registerAddress, 1, PWM, 4, HAL_MAX_DELAY);
 }
 
 /**

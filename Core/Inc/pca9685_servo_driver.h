@@ -53,7 +53,7 @@
 #define PCA9685_MODE1_RESTART_BIT    7
 
 // Setup driver
-void init();
+void init(uint16_t frequency);
 void reset();
 // Update & Read PWM Frequency
 void setPWMFreq(uint16_t frequncy);

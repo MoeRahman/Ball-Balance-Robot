@@ -84,6 +84,7 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t buf[48];
+init()
 /* USER CODE END 0 */
 
 /**
