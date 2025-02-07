@@ -5,6 +5,8 @@
  *      Author: Muhtasim Rahman
  */ 
 
+#include <stdint.h>
+
 #ifndef INC_PCA9685_SERVO_DRIVER_H_
 #define INC_PCA9685_SERVO_DRIVER_H_
 
@@ -59,9 +61,9 @@ void reset();
 void setPWMFreq(uint16_t frequncy);
 void getPWMFreq();
 // Update  PWM signal
-void setPWM();
+void setPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime);
 // Update servo angle
-void setAngle();
+void setAngle(uint8_t Channel, float Angle);
 
 
 #endif /* INC_PCA9685_SERVO_DRIVER_H_ */

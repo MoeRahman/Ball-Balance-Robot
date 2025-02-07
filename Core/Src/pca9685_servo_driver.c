@@ -9,6 +9,7 @@
 #include <math.h>
 #include <pca9685_servo_driver.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <stm32f4xx_hal.h>
@@ -46,20 +47,20 @@ void setPWMFreq(uint16_t frequency)
   uint8_t prescale;
   if(frequency >= 1526) prescale = 0x03;
   else if(frequency <= 24) prescale = 0xFF;
-  //  internal 25 MHz oscillator as in the datasheet page no 1/52
+  //  internal 25 MHz oscillator
   else prescale = 25000000 / (4096 * frequency);
-  // prescale changes 3 to 255 for 1526Hz to 24Hz as in the datasheet page no 1/52
+  // prescale changes 3 to 255 for 1526Hz to 24Hz
   setBit(PCA9685_MODE1, PCA9685_MODE1_SLEEP_BIT, 1);
-  HAL_I2C_Mem_Write(&hi2c1, PCA9685_I2C_ADDRESS, PCA9685_PRESCALE, 1, &prescale, 1, HAL_MAX_DELAY);
-  PCA9685_SetBit(PCA9685_MODE1, PCA9685_MODE1_SLEEP_BIT, 0);
-  PCA9685_SetBit(PCA9685_MODE1, PCA9685_MODE1_RESTART_BIT, 1);
+  HAL_I2C_Mem_Write(&hi2c3, PCA9685_I2C_ADDRESS, PCA9685_PRESCALE, 1, &prescale, 1, HAL_MAX_DELAY);
+  setBit(PCA9685_MODE1, PCA9685_MODE1_SLEEP_BIT, 0);
+  setBit(PCA9685_MODE1, PCA9685_MODE1_RESTART_BIT, 1);
 }
 
 /**
  * @brief  Initializes PWM Driver
  * @retval void
  */ 
-void init(uint16_t frequncy)
+void init(uint16_t frequency)
 {
     HAL_StatusTypeDef ret = HAL_I2C_IsDeviceReady(&hi2c3, PCA9685_I2C_ADDRESS<<1, 1, HAL_MAX_DELAY);
 
@@ -105,7 +106,7 @@ void setPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
  */
 void setAngle(uint8_t Channel, float Angle)
 {
-    float Value
+    float Value;
     // 12 bit resolution @PWM frequency 50Hz == 20ms Period
     Value = 4095 * ((Angle * (2.5 - 0.5) / 180.0) + 0.5);
     setPWM(Channel, 0, (uint16_t)Value);

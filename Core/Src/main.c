@@ -125,12 +125,11 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
-  init();
+  init(50); //Set PWM frequency to 50Hz
   HAL_Delay(1000);
   sprintf((char*)buf, "application loop\n");
   HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
   /* USER CODE END 2 */
-  init(50); //Set PWM frequency to 50Hz
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
