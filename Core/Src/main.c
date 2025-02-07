@@ -84,7 +84,6 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t buf[48];
-init()
 /* USER CODE END 0 */
 
 /**
@@ -131,12 +130,24 @@ int main(void)
   sprintf((char*)buf, "application loop\n");
   HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
   /* USER CODE END 2 */
+  init(50); //Set PWM frequency to 50Hz
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
+    setAngle(1, 0);
+    setAngle(2, 0);
+    HAL_Delay(500);
+
+    setAngle(1, 90);
+    setAngle(2, 90);
+    HAL_Delay(500);
+
+    setAngle(1, 180);
+    setAngle(2, 180);
+    HAL_Delay(500);
+
     
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
