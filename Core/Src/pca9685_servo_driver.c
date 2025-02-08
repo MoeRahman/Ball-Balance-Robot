@@ -47,7 +47,7 @@ void setPWMFreq(uint16_t frequency)
   uint8_t prescale;
   if(frequency >= 1526) prescale = 0x03;
   else if(frequency <= 24) prescale = 0xFF;
-  //  internal 25 MHz oscillator
+  // internal 25 MHz oscillator
   else prescale = 25000000 / (4096 * frequency);
   // prescale changes 3 to 255 for 1526Hz to 24Hz
   setBit(PCA9685_MODE1, PCA9685_MODE1_SLEEP_BIT, 1);
@@ -73,7 +73,7 @@ void init(uint16_t frequency)
 
     setPWMFreq(frequency);
     setBit(PCA9685_MODE1, PCA9685_MODE1_AI_BIT, 1);
-    strcpy((char*)buffer, "Initialization complete");
+    strcpy((char*)buffer, "Initialization complete\n");
     HAL_UART_Transmit(&huart1, buffer, strlen((char*)buffer), HAL_MAX_DELAY);
 }
 
@@ -108,6 +108,6 @@ void setAngle(uint8_t Channel, float Angle)
 {
     float Value;
     // 12 bit resolution @PWM frequency 50Hz == 20ms Period
-    Value = 4095 * ((Angle * (2.5 - 0.5) / 180.0) + 0.5);
+    Value = 4095 * (((Angle/180) + 1)/20);
     setPWM(Channel, 0, (uint16_t)Value);
 }
