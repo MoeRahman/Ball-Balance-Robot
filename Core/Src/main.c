@@ -19,8 +19,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "usb_host.h"
-
 /* Private includes ----------------------------------------------------------*/
+#include "pca9685_servo_driver.h"
+#include "stdio.h"
+#include "stdbool.h"
+#include "string.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -80,7 +83,7 @@ void MX_USB_HOST_Process(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint8_t buf[48];
 /* USER CODE END 0 */
 
 /**
@@ -122,13 +125,18 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
-
+  init();
+  HAL_Delay(1000);
+  sprintf((char*)buf, "application loop\n");
+  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    
+    
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
