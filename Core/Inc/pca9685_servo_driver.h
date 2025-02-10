@@ -10,6 +10,10 @@
 #ifndef INC_PCA9685_SERVO_DRIVER_H_
 #define INC_PCA9685_SERVO_DRIVER_H_
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 // REGISTER ADDRESSES
 #define PCA9685_MODE1 0x00      /**< Mode Register 1 */
 #define PCA9685_MODE2 0x01      /**< Mode Register 2 */
@@ -55,15 +59,16 @@
 #define PCA9685_MODE1_RESTART_BIT    7
 
 // Setup driver
-void init(uint16_t frequency);
-void reset();
+void servo_setup(uint16_t frequency);
 // Update & Read PWM Frequency
 void setPWMFreq(uint16_t frequncy);
-void getPWMFreq();
 // Update  PWM signal
-void setPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime);
+void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime);
 // Update servo angle
-void setAngle(uint8_t Channel, float Angle);
+void setServoAngle(uint8_t Channel, float Angle);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_PCA9685_SERVO_DRIVER_H_ */

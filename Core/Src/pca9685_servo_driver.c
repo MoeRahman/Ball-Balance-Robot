@@ -60,7 +60,7 @@ void setPWMFreq(uint16_t frequency)
  * @brief  Initializes PWM Driver
  * @retval void
  */ 
-void init(uint16_t frequency)
+void servo_setup(uint16_t frequency)
 {
     HAL_StatusTypeDef ret = HAL_I2C_IsDeviceReady(&hi2c3, PCA9685_I2C_ADDRESS<<1, 1, HAL_MAX_DELAY);
 
@@ -84,7 +84,7 @@ void init(uint16_t frequency)
  * @param OnTime 
  * @param OffTime 
  */
-void setPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
+void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
 {
     uint8_t registerAddress;
     uint8_t PWM[4];
@@ -104,10 +104,10 @@ void setPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
  * @param Channel 
  * @param Angle 
  */
-void setAngle(uint8_t Channel, float Angle)
+void setServoAngle(uint8_t Channel, float Angle)
 {
     float Value;
     // 12 bit resolution @PWM frequency 50Hz == 20ms Period
     Value = 4095 * (((Angle/180) + 1)/20);
-    setPWM(Channel, 0, (uint16_t)Value);
+    setServoPWM(Channel, 0, (uint16_t)Value);
 }

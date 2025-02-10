@@ -38,3 +38,5 @@
 [Rr]elease
 [Dd]ebug
 .launch
+*.launch
+.cproject
