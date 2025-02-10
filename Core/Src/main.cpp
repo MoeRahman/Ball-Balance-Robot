@@ -1,7 +1,7 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file           : main.c
+  * @file           : main.cpp
   * @brief          : Main program body
   ******************************************************************************
   * @attention
@@ -129,19 +129,18 @@ int main(void)
   HAL_Delay(1000);
   sprintf((char*)buf, "Application loop\n");
   HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-    setAngle(1, 90);
-    setAngle(2, 90);
-    HAL_Delay(100);
-
-
-    
+    setAngle(0, 0);
+    setAngle(1, 0);
+    setAngle(2, 0);
+    HAL_Delay(500);
+	
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
