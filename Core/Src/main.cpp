@@ -78,12 +78,14 @@ static void MX_USART1_UART_Init(void);
 void MX_USB_HOST_Process(void);
 
 /* USER CODE BEGIN PFP */
-
+void Init_BUTTON(void);
+void Init_LED(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint8_t buf[48];
+uint8_t counter{0};
 /* USER CODE END 0 */
 
 /**
@@ -125,6 +127,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
+  Init_BUTTON();
+  Init_LED();
   servo_setup(47); //Set PWM frequency to 50Hz
   HAL_Delay(1000);
   sprintf((char*)buf, "Application loop\n");
@@ -136,10 +140,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    setServoAngle(0, 0);
-    setServoAngle(1, 0);
-    setServoAngle(2, 0);
-    HAL_Delay(500);
+    setServoAngle(0, counter%270);
+    setServoAngle(1, counter%270);
+    setServoAngle(2, counter%270);
+    counter += 90;
+    HAL_Delay(5000);
 	
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
@@ -147,6 +152,31 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+
+/**
+ * @brief Initialize User Button
+ * 
+ */
+void Init_BUTTON(void)
+{
+  GPIO_InitTypeDef BUTTON;
+  BUTTON.Pin = GPIO_PIN_0;
+  BUTTON.Mode = GPIO_MODE_INPUT;
+  BUTTON.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &BUTTON);
+}
+
+/**
+ * @brief Initialize LED Input Pin
+ * 
+ */
+void Init_LED(void)
+{
+  GPIO_InitTypeDef GREEN_LED;
+  GREEN_LED.Pin = GPIO_PIN_13;
+  GREEN_LED.Mode = GPIO_MODE_OUTPUT_PP;
+  HAL_GPIO_Init(GPIOG, &GREEN_LED);
 }
 
 /**
