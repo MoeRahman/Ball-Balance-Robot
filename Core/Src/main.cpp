@@ -84,8 +84,6 @@ void Init_LED(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t buf[48];
-uint8_t counter{0};
 /* USER CODE END 0 */
 
 /**
@@ -96,7 +94,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -126,7 +123,9 @@ int main(void)
   MX_TIM1_Init();
   MX_USART1_UART_Init();
   MX_USB_HOST_Init();
+
   /* USER CODE BEGIN 2 */
+  uint8_t buf[48];
   Init_BUTTON();
   Init_LED();
   servo_setup(47); //Set PWM frequency to 50Hz
@@ -134,17 +133,24 @@ int main(void)
   sprintf((char*)buf, "Application loop\n");
   HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
 
+  // Servos start at 0 deg
+  setServoAngle(0, 0);
+  setServoAngle(1, 0);
+  setServoAngle(2, 0);
+  HAL_Delay(500);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    setServoAngle(0, counter%270);
-    setServoAngle(1, counter%270);
-    setServoAngle(2, counter%270);
-    counter += 90;
-    HAL_Delay(5000);
+    setServoAngle(0, 180);
+    ServoEaseTo(1, 0, 180, 3000);
+    HAL_Delay(1000);
+    setServoAngle(0, 0);
+    ServoEaseTo(1, 180, 0, 1000);
+    //setServoAngle(2, counter%270);
 	
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
