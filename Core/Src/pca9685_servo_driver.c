@@ -19,6 +19,7 @@ extern UART_HandleTypeDef huart1;
 
 uint8_t buffer[48];
 
+
 /**
  * @brief Set the Bit object
  * 
@@ -36,6 +37,7 @@ void setBit(uint8_t Register, uint8_t Bit, uint8_t Value)
     HAL_I2C_Mem_Write(&hi2c3, PCA9685_I2C_ADDRESS, Register, 1, &readValue, 1, HAL_MAX_DELAY);
     HAL_Delay(1);
 }
+
 
 /**
  * @brief Set the PWM frequency
@@ -55,6 +57,7 @@ void setPWMFreq(uint16_t frequency)
   setBit(PCA9685_MODE1, PCA9685_MODE1_SLEEP_BIT, 0);
   setBit(PCA9685_MODE1, PCA9685_MODE1_RESTART_BIT, 1);
 }
+
 
 /**
  * @brief  Initializes PWM Driver
@@ -77,6 +80,7 @@ void servo_setup(uint16_t frequency)
     HAL_UART_Transmit(&huart1, buffer, strlen((char*)buffer), HAL_MAX_DELAY);
 }
 
+
 /**
  * @brief Set PWM Duty Cycle by controlling the on time and off time
  * 
@@ -98,6 +102,7 @@ void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
     HAL_I2C_Mem_Write(&hi2c3, PCA9685_I2C_ADDRESS, registerAddress, 1, PWM, 4, HAL_MAX_DELAY);
 }
 
+
 /**
  * @brief Set the Angle of Servo [deg]
  * 
@@ -107,7 +112,46 @@ void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
 void setServoAngle(uint8_t Channel, float Angle)
 {
     float Value;
+
     // 12 bit resolution @PWM frequency 50Hz == 20ms Period
     Value = 4095 * (((Angle/180) + 1)/20);
     setServoPWM(Channel, 0, (uint16_t)Value);
+}
+
+
+/**
+ * @brief Using angle interpolation to smooth servo motion
+ * 
+ * @param Channel Servo channel uint8_t 0-15
+ * @param startAngle Starting Angle
+ * @param endAngle Destination Angle
+ * @param duration_ms Time it takes in ms to get from Start to End Angle
+ */
+void ServoEaseTo(uint8_t Channel, float startAngle, float endAngle, float duration_ms)
+{
+
+    // Interpolation Cubic Function Coefficients
+    float a0 = startAngle;
+    float a1 = 0;
+    float a2 = 3 / (duration_ms * duration_ms) * (endAngle - startAngle);
+    float a3 = -2 / (duration_ms * duration_ms * duration_ms) * (endAngle - startAngle);
+
+    // Start Time
+    uint32_t startTick = HAL_GetTick();
+    uint32_t elapsedTick = 0;
+
+    while (elapsedTick <= duration_ms)
+    {
+        elapsedTick = HAL_GetTick() - startTick;
+        float t = (float)elapsedTick;
+
+        float easeToAngle = a0 + (a1*t) + (a2*t*t) + (a3*t*t*t);
+        setServoAngle(Channel, easeToAngle);
+
+        HAL_Delay(10); // Delay between angle commands to improve smoothness
+
+    }
+
+    setServoAngle(Channel, endAngle); // If all else fails, this will ensure endAngle is reached
+
 }

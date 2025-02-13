@@ -60,12 +60,18 @@ extern "C"{
 
 // Setup driver
 void servo_setup(uint16_t frequency);
+
 // Update & Read PWM Frequency
 void setPWMFreq(uint16_t frequncy);
+
 // Update  PWM signal
 void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime);
+
 // Update servo angle
 void setServoAngle(uint8_t Channel, float Angle);
+
+// Using interpolation to smooth servo movements
+void ServoEaseTo(uint8_t Channel, float startAngle, float endAngle, float duration_ms);
 
 #ifdef __cplusplus
 }
