@@ -58,6 +58,20 @@ extern "C"{
 #define PCA9685_MODE1_AI_BIT         5
 #define PCA9685_MODE1_RESTART_BIT    7
 
+/**
+ * @brief Structure to define servo movement parameters.
+ * 
+ * This struct holds the necessary parameters for easing a servo
+ * from a start angle to an end angle over a given duration.
+ */
+typedef struct {
+    uint8_t channel;       /** PCA9685 Channel the servo is connected to */
+    float startAngle;      /** Starting angle of the servo [degrees] */
+    float endAngle;        /** Target angle of the servo [degrees] */
+    float duration;        /** Time to complete movement [milliseconds] */
+    uint32_t startTime;    /** Time when movement started [milliseconds] */
+} ServoEase;
+
 // Setup driver
 void servo_setup(uint16_t frequency);
 
@@ -71,7 +85,10 @@ void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime);
 void setServoAngle(uint8_t Channel, float Angle);
 
 // Using interpolation to smooth servo movements
-void ServoEaseTo(uint8_t Channel, float startAngle, float endAngle, float duration_ms);
+float ServoEaseTo(float theta_s, float theta_e, float tf, float t);
+
+// Control Multiple Servo in parallel
+void ServoEaseMultiple(ServoEase servos[], uint8_t numServos);
 
 #ifdef __cplusplus
 }

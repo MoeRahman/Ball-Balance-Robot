@@ -20,17 +20,23 @@
 #include "main.h"
 #include "usb_host.h"
 /* Private includes ----------------------------------------------------------*/
+
+/* USER CODE BEGIN Includes */
+#include <iostream>
 #include "pca9685_servo_driver.h"
+#include "inverse-kinematics.h"
+#include "Eigen/Dense"
+
 #include "stdio.h"
 #include "stdbool.h"
 #include "string.h"
-/* USER CODE BEGIN Includes */
-
+#include "sstream"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+using namespace Eigen;
+using namespace std;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -80,6 +86,7 @@ void MX_USB_HOST_Process(void);
 /* USER CODE BEGIN PFP */
 void Init_BUTTON(void);
 void Init_LED(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -97,7 +104,6 @@ int main(void)
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -134,23 +140,57 @@ int main(void)
   HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
 
   // Servos start at 0 deg
+  float duration = 3000;
+
+  setServoAngle(0, 180);
+  setServoAngle(1, 180);
+  setServoAngle(2, 180);
+  HAL_Delay(100);
+  setServoAngle(0, 90);
+  setServoAngle(1, 90);
+  setServoAngle(2, 90);
+  HAL_Delay(100);
   setServoAngle(0, 0);
   setServoAngle(1, 0);
   setServoAngle(2, 0);
-  HAL_Delay(500);
+  HAL_Delay(100);
 
+  // Generate inverse kinematics matrix (Assume this function is defined elsewhere)
+  MatrixXd result = inverse_kinematics(-10, 0, 20);  // Example values for Theta, Phi, Pz
+  print_mat_uart(&huart1, result);
+  VectorXd norm = row_norms(result);
+  print_vector_uart(&huart1, norm);
+
+  if (result.data() == nullptr) {
+      while(1); // Trap if memory allocation fails
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    setServoAngle(0, 180);
-    ServoEaseTo(1, 0, 180, 3000);
-    HAL_Delay(1000);
-    setServoAngle(0, 0);
-    ServoEaseTo(1, 180, 0, 1000);
-    //setServoAngle(2, counter%270);
+    float startCommands[3] = {0, 0, 0};
+    float endCommands[3] = {90, 90, 90};
+
+    ServoEase servoCommands[] = {
+      {0, startCommands[0], endCommands[0], duration}, // Servo 0: Move from startAngle to endAngle
+      {1, startCommands[1], endCommands[1], duration}, // Servo 1: Move from startAngle to endAngle
+      {2, startCommands[2], endCommands[2], duration}  // Servo 2: Move from startAngle to endAngle
+      };
+
+    uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
+    ServoEaseMultiple(servoCommands, numServos);       // Execute the current set of Servo Commands
+
+//    for(int i = 0; i < 3; ++i)
+//    {
+//        sprintf((char*)buf, "norm %.2f\r\n", norm(i));
+//        HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+//
+//    }
+
+    //Inverse Kinematics
+
 	
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
@@ -159,6 +199,8 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
+
+
 
 /**
  * @brief Initialize User Button

@@ -118,40 +118,47 @@ void setServoAngle(uint8_t Channel, float Angle)
     setServoPWM(Channel, 0, (uint16_t)Value);
 }
 
-
-/**
- * @brief Using angle interpolation to smooth servo motion
- * 
- * @param Channel Servo channel uint8_t 0-15
- * @param startAngle Starting Angle
- * @param endAngle Destination Angle
- * @param duration_ms Time it takes in ms to get from Start to End Angle
- */
-void ServoEaseTo(uint8_t Channel, float startAngle, float endAngle, float duration_ms)
+void ServoEaseMultiple(ServoEase servos[], uint8_t numServos)
 {
+    uint32_t globalStartTime = HAL_GetTick();
+    uint32_t elapsedTime = 0;
 
-    // Interpolation Cubic Function Coefficients
-    float a0 = startAngle;
-    float a1 = 0;
-    float a2 = 3 / (duration_ms * duration_ms) * (endAngle - startAngle);
-    float a3 = -2 / (duration_ms * duration_ms * duration_ms) * (endAngle - startAngle);
-
-    // Start Time
-    uint32_t startTick = HAL_GetTick();
-    uint32_t elapsedTick = 0;
-
-    while (elapsedTick <= duration_ms)
-    {
-        elapsedTick = HAL_GetTick() - startTick;
-        float t = (float)elapsedTick;
-
-        float easeToAngle = a0 + (a1*t) + (a2*t*t) + (a3*t*t*t);
-        setServoAngle(Channel, easeToAngle);
-
-        HAL_Delay(10); // Delay between angle commands to improve smoothness
-
+    // Set individual start times
+    for (uint8_t i = 0; i < numServos; i++) {
+        servos[i].startTime = globalStartTime;
     }
 
-    setServoAngle(Channel, endAngle); // If all else fails, this will ensure endAngle is reached
+    while (elapsedTime <= servos[0].duration) {
+        elapsedTime = HAL_GetTick() - globalStartTime;
 
+        for (uint8_t i = 0; i < numServos; i++) {
+            float t = (float)elapsedTime;
+            float duration = servos[i].duration;
+
+            // Ensure the easing function only runs within duration limits
+            if (t <= duration) {
+                float easedAngle = ServoEaseTo(servos[i].startAngle, servos[i].endAngle, duration, t);
+                setServoAngle(servos[i].channel, easedAngle);
+            } else {
+                setServoAngle(servos[i].channel, servos[i].endAngle); // Ensure it reaches final position
+            }
+        }
+
+        HAL_Delay(10); // Smooth movement update
+    }
+}
+
+float ServoEaseTo(float theta_s, float theta_e, float tf, float t) 
+{
+    // Cubic polynomial coefficients
+    float a0 = theta_s;
+    float a1 = 0;
+    float a2 = 3 / (tf * tf) * (theta_e - theta_s);
+    float a3 = -2 / (tf * tf * tf) * (theta_e - theta_s);
+
+    // Ensure `t` does not exceed `tf`
+    if (t > tf) t = tf;
+
+    // Compute eased angle
+    return a0 + a1 * t + a2 * t * t + a3 * t * t * t;
 }
