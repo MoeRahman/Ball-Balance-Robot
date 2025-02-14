@@ -84,20 +84,20 @@ void servo_setup(uint16_t frequency)
 /**
  * @brief Set PWM Duty Cycle by controlling the on time and off time
  * 
- * @param Channel 
- * @param OnTime 
- * @param OffTime 
+ * @param channel Servo channel 0-15
+ * @param onTime  Duration of high signal of PWM
+ * @param offTime Duration of low signal of PWM
  */
-void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
+void setServoPWM(uint16_t channel, uint16_t onTime, uint16_t offTime)
 {
     uint8_t registerAddress;
     uint8_t PWM[4];
-    registerAddress = PCA9685_LED0_ON_L + (4 * Channel);
+    registerAddress = PCA9685_LED0_ON_L + (4 * channel);
 
-    PWM[0] = OnTime & 0xFF;
-    PWM[1] = OnTime>>8;
-    PWM[2] = OffTime & 0xFF;
-    PWM[3] = OffTime>>8;
+    PWM[0] = onTime & 0xFF;
+    PWM[1] = onTime>>8;
+    PWM[2] = offTime & 0xFF;
+    PWM[3] = offTime>>8;
 
     HAL_I2C_Mem_Write(&hi2c3, PCA9685_I2C_ADDRESS, registerAddress, 1, PWM, 4, HAL_MAX_DELAY);
 }
@@ -106,18 +106,24 @@ void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
 /**
  * @brief Set the Angle of Servo [deg]
  * 
- * @param Channel 
- * @param Angle 
+ * @param channel Servo channel 0-15 
+ * @param angle   Set servo angle[deg] 
  */
-void setServoAngle(uint8_t Channel, float Angle)
+void setServoAngle(uint8_t channel, float angle)
 {
     float Value;
 
     // 12 bit resolution @PWM frequency 50Hz == 20ms Period
-    Value = 4095 * (((Angle/180) + 1)/20);
-    setServoPWM(Channel, 0, (uint16_t)Value);
+    Value = 4095 * (((angle/180) + 1)/20);
+    setServoPWM(channel, 0, (uint16_t)Value);
 }
 
+/**
+ * @brief Control multiple servos using ServoEasing func
+ * 
+ * @param servos 
+ * @param numServos 
+ */
 void ServoEaseMultiple(ServoEase servos[], uint8_t numServos)
 {
     uint32_t globalStartTime = HAL_GetTick();
@@ -148,6 +154,16 @@ void ServoEaseMultiple(ServoEase servos[], uint8_t numServos)
     }
 }
 
+/**
+ * @brief Using cubic interpolation to ease the 
+ *        servo out of start angle and ease into end angle
+ * 
+ * @param theta_s Start angle[deg]
+ * @param theta_e End angle[deg]
+ * @param tf      Duration of motion from start to end angle
+ * @param t       SysTick timer providing elapsed program time
+ * @return float 
+ */
 float ServoEaseTo(float theta_s, float theta_e, float tf, float t) 
 {
     // Cubic polynomial coefficients

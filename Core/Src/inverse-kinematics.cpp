@@ -58,7 +58,7 @@ VectorXd row_norms(const MatrixXd& mat)
 {
     VectorXd norms(mat.rows());  // Vector to store row norms
     for (int i = 0; i < mat.rows(); ++i) {
-        norms(i) = 4.5*mat.row(i).norm();  // Compute norm of each row
+        norms(i) = mat.row(i).norm();  // Compute norm of each row
     }
 
     return norms;  // Return the first row norm, or modify this as needed

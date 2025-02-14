@@ -79,10 +79,10 @@ void servo_setup(uint16_t frequency);
 void setPWMFreq(uint16_t frequncy);
 
 // Update  PWM signal
-void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime);
+void setServoPWM(uint16_t channel, uint16_t onTime, uint16_t offTime);
 
 // Update servo angle
-void setServoAngle(uint8_t Channel, float Angle);
+void setServoAngle(uint8_t channel, float angle);
 
 // Using interpolation to smooth servo movements
 float ServoEaseTo(float theta_s, float theta_e, float tf, float t);
