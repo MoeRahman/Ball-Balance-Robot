@@ -44,11 +44,12 @@ MatrixXd inverse_kinematics(int Theta, int Phi, int Pz) {
             0, 1, 0,
             -sin(phi), 0, cos(phi);
 
-    // Yaw rotation matrix (Identity matrix, since no yaw)
-    Matrix3d R_z = Matrix3d::Identity();
+    Matrix3d R = R_x*R_y;
 
-    Matrix3d result = P.replicate(1,3).transpose() + (R_x * R_y * R_z) * b - a;
-
+    Matrix3d transformed_b = R * b.transpose();
+    MatrixXd transformed_b_T  = transformed_b.transpose(); // Ensure correct column-wise addition
+    MatrixXd result = transformed_b_T.rowwise() + P.transpose() - a;
+    print_mat_uart(&huart1, result);
     // Compute output
     return result;
 }

@@ -31,6 +31,7 @@
 #include "stdbool.h"
 #include "string.h"
 #include "sstream"
+#include "cmath"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -136,62 +137,175 @@ int main(void)
   Init_LED();
   servo_setup(47); //Set PWM frequency to 50Hz
   HAL_Delay(1000);
-  sprintf((char*)buf, "Application loop\n");
-  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
 
   // Servos start at 0 deg
-  float duration = 3000;
+  float duration = 1000;
+  float theta = 0;
+  float phi = 0;
 
-  setServoAngle(0, 180);
-  setServoAngle(1, 180);
-  setServoAngle(2, 180);
-  HAL_Delay(100);
-  setServoAngle(0, 90);
-  setServoAngle(1, 90);
-  setServoAngle(2, 90);
-  HAL_Delay(100);
+  // Generate inverse kinematics matrix (Assume this function is defined elsewhere)
+  MatrixXd A = inverse_kinematics(theta, phi, 30);  // Example values for Theta, Phi, Pz
+  //print_mat_uart(&huart1, result);
+  VectorXd norms = A.rowwise().norm();
+  //print_vector_uart(&huart1, norm);
+
+  if (A.data() == nullptr) {
+      while(1); // Trap if memory allocation fails
+  }
+
   setServoAngle(0, 0);
   setServoAngle(1, 0);
   setServoAngle(2, 0);
-  HAL_Delay(100);
 
-  // Generate inverse kinematics matrix (Assume this function is defined elsewhere)
-  MatrixXd result = inverse_kinematics(-10, 0, 20);  // Example values for Theta, Phi, Pz
-  print_mat_uart(&huart1, result);
-  VectorXd norm = row_norms(result);
-  print_vector_uart(&huart1, norm);
+  ServoEase servoCommands[] = {
+    {0, 0, 135, duration}, // Servo 0: Move from startAngle to endAngle
+    {1, 0, 135, duration}, // Servo 1: Move from startAngle to endAngle
+    {2, 0, 135, duration}  // Servo 2: Move from startAngle to endAngle
+    };
 
-  if (result.data() == nullptr) {
-      while(1); // Trap if memory allocation fails
-  }
+  uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
+
+//  float startCommands[3] = {0, 0, 0};
+//  float endCommands[3] = {static_cast<float>(4.5*norm(0)),
+//                          static_cast<float>(4.5*norm(1)),
+//                          static_cast<float>(4.5*norm(2))};
+//
+//  ServoEase servoCommands[] = {
+//    {0, startCommands[0], endCommands[0], duration}, // Servo 0: Move from startAngle to endAngle
+//    {1, startCommands[1], endCommands[1], duration}, // Servo 1: Move from startAngle to endAngle
+//    {2, startCommands[2], endCommands[2], duration}  // Servo 2: Move from startAngle to endAngle
+//    };
+//
+//  uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
+//  ServoEaseMultiple(servoCommands, numServos);       // Execute the current set of Servo Commands
+//
+//  sprintf((char*)buf, "S1\tS2\tS3\r\n");
+//  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+  ServoEaseMultiple(servoCommands, numServos);       // Execute the current set of Servo Commands
+  float S1 = 135, S2 = 135, S3 = 135;
+  float E1 = 0, E2 = 0, E3 = 0;
+  float t = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    float startCommands[3] = {0, 0, 0};
-    float endCommands[3] = {90, 90, 90};
+	duration = 500;
 
-    ServoEase servoCommands[] = {
-      {0, startCommands[0], endCommands[0], duration}, // Servo 0: Move from startAngle to endAngle
-      {1, startCommands[1], endCommands[1], duration}, // Servo 1: Move from startAngle to endAngle
-      {2, startCommands[2], endCommands[2], duration}  // Servo 2: Move from startAngle to endAngle
-      };
+	A = inverse_kinematics(30, 0, 30);
+	norms = A.rowwise().norm();
 
-    uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
-    ServoEaseMultiple(servoCommands, numServos);       // Execute the current set of Servo Commands
 
-//    for(int i = 0; i < 3; ++i)
-//    {
-//        sprintf((char*)buf, "norm %.2f\r\n", norm(i));
-//        HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	E1 = 4.5*norms(0);
+	E2 = 4.5*norms(1);
+	E3 = 4.5*norms(2);
+
+	servoCommands[0] = {0, S1, E1, duration};
+	servoCommands[1] = {1, S2, E2, duration};
+	servoCommands[2] = {2, S3, E3, duration};
+	ServoEaseMultiple(servoCommands, numServos);
+
+	S1 = E1;
+	S2 = E2;
+	S3 = E3;
+
+	A = inverse_kinematics(-30, 0, 30);
+	norms = A.rowwise().norm();
+
+	E1 = 4.5*norms(0);
+	E2 = 4.5*norms(1);
+	E3 = 4.5*norms(2);
+
+	servoCommands[0] = {0, S1, E1, duration};
+	servoCommands[1] = {1, S2, E2, duration};
+	servoCommands[2] = {2, S3, E3, duration};
+	ServoEaseMultiple(servoCommands, numServos);
+
+	S1 = E1;
+	S2 = E2;
+	S3 = E3;
+
+
+//    S1 = E1;
+//    S2 = E2;
+//    S3 = E3;
 //
-//    }
+//    E1 = 270;
+//    E2 = 0;
+//    E3 = 0;
+//
+//    servoCommands[0] = {0, S1, E1, duration};
+//    servoCommands[1] = {1, S2, E2, duration};
+//    servoCommands[2] = {2, S3, E3, duration};
+//    ServoEaseMultiple(servoCommands, numServos);
+//
+//    S1 = E1;
+//    S2 = E2;
+//    S3 = E3;
+//
+//    E1 = 0;
+//    E2 = 270;
+//    E3 = 270;
+//
+//    servoCommands[0] = {0, S1, E1, duration};
+//    servoCommands[1] = {1, S2, E2, duration};
+//    servoCommands[2] = {2, S3, E3, duration};
+//    ServoEaseMultiple(servoCommands, numServos);
+//
+//    S1 = E1;
+//    S2 = E2;
+//    S3 = E3;
+//
+//    E1 = 135;
+//    E2 = 135;
+//    E3 = 135;
+//
+//    servoCommands[0] = {0, S1, E1, duration};
+//    servoCommands[1] = {1, S2, E2, duration};
+//    servoCommands[2] = {2, S3, E3, duration};
+//    ServoEaseMultiple(servoCommands, numServos);
+//
+//    S1 = E1;
+//    S2 = E2;
+//    S3 = E3;
+//
+//    E1 = 135;
+//    E2 = 0;
+//    E3 = 270;
+//
+//    servoCommands[0] = {0, S1, E1, duration};
+//    servoCommands[1] = {1, S2, E2, duration};
+//    servoCommands[2] = {2, S3, E3, duration};
+//    ServoEaseMultiple(servoCommands, numServos);
+//
+//    S1 = E1;
+//    S2 = E2;
+//    S3 = E3;
+//
+//    E1 = 135;
+//    E2 = 270;
+//    E3 = 0;
+//
+//    servoCommands[0] = {0, S1, E1, duration};
+//    servoCommands[1] = {1, S2, E2, duration};
+//    servoCommands[2] = {2, S3, E3, duration};
+//    ServoEaseMultiple(servoCommands, numServos);
+//
+//    S1 = E1;
+//    S2 = E2;
+//    S3 = E3;
+//
+//    E1 = 135;
+//    E2 = 135;
+//    E3 = 135;
+//
+//    servoCommands[0] = {0, S1, E1, duration};
+//    servoCommands[1] = {1, S2, E2, duration};
+//    servoCommands[2] = {2, S3, E3, duration};
+    //ServoEaseMultiple(servoCommands, numServos);
 
-    //Inverse Kinematics
-
-	
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
@@ -199,7 +313,6 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
-
 
 
 /**
