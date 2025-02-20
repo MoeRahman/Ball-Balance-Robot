@@ -47,7 +47,8 @@ using namespace std;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define MAX_ANGLE 90
+#define MIN_ANGLE 0
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -153,38 +154,24 @@ int main(void)
       while(1); // Trap if memory allocation fails
   }
 
-  setServoAngle(0, 0);
-  setServoAngle(1, 0);
-  setServoAngle(2, 0);
+//  setServoAngle(0, MIN_ANGLE);
+//  setServoAngle(1, MIN_ANGLE);
+//  setServoAngle(2, MIN_ANGLE);
+//  HAL_Delay(500);
+//  setServoAngle(0, MAX_ANGLE);
+//  setServoAngle(1, MAX_ANGLE);
+//  setServoAngle(2, MAX_ANGLE);
+//  HAL_Delay(500);
 
   ServoEase servoCommands[] = {
-    {0, 0, 135, duration}, // Servo 0: Move from startAngle to endAngle
-    {1, 0, 135, duration}, // Servo 1: Move from startAngle to endAngle
-    {2, 0, 135, duration}  // Servo 2: Move from startAngle to endAngle
+    {0, 0, 30, duration}, // Servo 0: Move from startAngle to endAngle
+    {1, 0, 30, duration}, // Servo 1: Move from startAngle to endAngle
+    {2, 0, 30, duration}  // Servo 2: Move from startAngle to endAngle
     };
 
   uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
 
-//  float startCommands[3] = {0, 0, 0};
-//  float endCommands[3] = {static_cast<float>(4.5*norm(0)),
-//                          static_cast<float>(4.5*norm(1)),
-//                          static_cast<float>(4.5*norm(2))};
-//
-//  ServoEase servoCommands[] = {
-//    {0, startCommands[0], endCommands[0], duration}, // Servo 0: Move from startAngle to endAngle
-//    {1, startCommands[1], endCommands[1], duration}, // Servo 1: Move from startAngle to endAngle
-//    {2, startCommands[2], endCommands[2], duration}  // Servo 2: Move from startAngle to endAngle
-//    };
-//
-//  uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
-//  ServoEaseMultiple(servoCommands, numServos);       // Execute the current set of Servo Commands
-//
-//  sprintf((char*)buf, "S1\tS2\tS3\r\n");
-//  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
-  ServoEaseMultiple(servoCommands, numServos);       // Execute the current set of Servo Commands
-  float S1 = 135, S2 = 135, S3 = 135;
-  float E1 = 0, E2 = 0, E3 = 0;
-  float t = 0;
+  ServoEaseMultiple(servoCommands, numServos);
 
   /* USER CODE END 2 */
 
@@ -192,40 +179,15 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	duration = 500;
+	duration = 1000;
 
-	A = inverse_kinematics(30, 0, 30);
-	norms = A.rowwise().norm();
-
-
-	E1 = 4.5*norms(0);
-	E2 = 4.5*norms(1);
-	E3 = 4.5*norms(2);
-
-	servoCommands[0] = {0, S1, E1, duration};
-	servoCommands[1] = {1, S2, E2, duration};
-	servoCommands[2] = {2, S3, E3, duration};
+	servoCommands[0] = {0, 20, 70, duration};
+	servoCommands[1] = {1, 20, 70, duration};
+	servoCommands[2] = {2, 20, 70, duration};
 	ServoEaseMultiple(servoCommands, numServos);
 
-	S1 = E1;
-	S2 = E2;
-	S3 = E3;
 
-	A = inverse_kinematics(-30, 0, 30);
-	norms = A.rowwise().norm();
 
-	E1 = 4.5*norms(0);
-	E2 = 4.5*norms(1);
-	E3 = 4.5*norms(2);
-
-	servoCommands[0] = {0, S1, E1, duration};
-	servoCommands[1] = {1, S2, E2, duration};
-	servoCommands[2] = {2, S3, E3, duration};
-	ServoEaseMultiple(servoCommands, numServos);
-
-	S1 = E1;
-	S2 = E2;
-	S3 = E3;
 
 
 //    S1 = E1;

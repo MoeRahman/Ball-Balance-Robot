@@ -85,8 +85,8 @@ void servo_setup(uint16_t frequency)
  * @brief Set PWM Duty Cycle by controlling the on time and off time
  * 
  * @param channel Servo channel 0-15
- * @param onTime  Duration of high signal of PWM
- * @param offTime Duration of low signal of PWM
+ * @param onTime  Duration of high signal of PWM value between 0 and 4095
+ * @param offTime Duration of low signal of PWM value between 0 and 4095
  */
 void setServoPWM(uint16_t channel, uint16_t onTime, uint16_t offTime)
 {
@@ -114,7 +114,7 @@ void setServoAngle(uint8_t channel, float angle)
     float Value;
 
     // 12 bit resolution @PWM frequency 50Hz == 20ms Period
-    Value = 4095 * (((angle/180) + 1)/20);
+    Value = ((angle/210)*474 + 73);
     setServoPWM(channel, 0, (uint16_t)Value);
 }
 

@@ -49,7 +49,7 @@ MatrixXd inverse_kinematics(int Theta, int Phi, int Pz) {
     Matrix3d transformed_b = R * b.transpose();
     MatrixXd transformed_b_T  = transformed_b.transpose(); // Ensure correct column-wise addition
     MatrixXd result = transformed_b_T.rowwise() + P.transpose() - a;
-    print_mat_uart(&huart1, result);
+    //print_mat_uart(&huart1, result);
     // Compute output
     return result;
 }
