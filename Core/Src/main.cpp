@@ -47,8 +47,8 @@ using namespace std;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define MAX_ANGLE 90
-#define MIN_ANGLE 0
+#define MAX_ANGLE 75
+#define MIN_ANGLE 45
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -140,9 +140,10 @@ int main(void)
   HAL_Delay(1000);
 
   // Servos start at 0 deg
-  float duration = 1000;
+  float duration = 3000;
   float theta = 0;
   float phi = 0;
+  float mid = (MAX_ANGLE + MIN_ANGLE)/2.f;
 
   // Generate inverse kinematics matrix (Assume this function is defined elsewhere)
   MatrixXd A = inverse_kinematics(theta, phi, 30);  // Example values for Theta, Phi, Pz
@@ -154,23 +155,29 @@ int main(void)
       while(1); // Trap if memory allocation fails
   }
 
-//  setServoAngle(0, MIN_ANGLE);
-//  setServoAngle(1, MIN_ANGLE);
-//  setServoAngle(2, MIN_ANGLE);
-//  HAL_Delay(500);
-//  setServoAngle(0, MAX_ANGLE);
-//  setServoAngle(1, MAX_ANGLE);
-//  setServoAngle(2, MAX_ANGLE);
-//  HAL_Delay(500);
-
   ServoEase servoCommands[] = {
-    {0, 0, 30, duration}, // Servo 0: Move from startAngle to endAngle
-    {1, 0, 30, duration}, // Servo 1: Move from startAngle to endAngle
-    {2, 0, 30, duration}  // Servo 2: Move from startAngle to endAngle
+    {0, MIN_ANGLE, 90, duration}, // Servo 0: Move from startAngle to endAngle
+    {1, MIN_ANGLE, 90, duration}, // Servo 1: Move from startAngle to endAngle
+    {2, MIN_ANGLE, 90, duration}  // Servo 2: Move from startAngle to endAngle
     };
 
   uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
 
+  ServoEaseMultiple(servoCommands, numServos);
+
+  servoCommands[0] = {0, MAX_ANGLE, MIN_ANGLE, duration};
+  servoCommands[1] = {1, MAX_ANGLE, MIN_ANGLE, duration};
+  servoCommands[2] = {2, MAX_ANGLE, MIN_ANGLE, duration};
+  ServoEaseMultiple(servoCommands, numServos);
+
+  servoCommands[0] = {0, MIN_ANGLE, MAX_ANGLE, duration};
+  servoCommands[1] = {1, MIN_ANGLE, MAX_ANGLE, duration};
+  servoCommands[2] = {2, MIN_ANGLE, MAX_ANGLE, duration};
+  ServoEaseMultiple(servoCommands, numServos);
+
+  servoCommands[0] = {0, MAX_ANGLE, mid, duration};
+  servoCommands[1] = {1, MAX_ANGLE, 15*sin(120*M_PI/180) + mid, duration};
+  servoCommands[2] = {2, MAX_ANGLE, 15*sin(240*M_PI/180) + mid, duration};
   ServoEaseMultiple(servoCommands, numServos);
 
   /* USER CODE END 2 */
@@ -179,94 +186,15 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	duration = 1000;
+	duration = 50;
 
-	servoCommands[0] = {0, 20, 70, duration};
-	servoCommands[1] = {1, 20, 70, duration};
-	servoCommands[2] = {2, 20, 70, duration};
-	ServoEaseMultiple(servoCommands, numServos);
-
-
-
-
-
-//    S1 = E1;
-//    S2 = E2;
-//    S3 = E3;
-//
-//    E1 = 270;
-//    E2 = 0;
-//    E3 = 0;
-//
-//    servoCommands[0] = {0, S1, E1, duration};
-//    servoCommands[1] = {1, S2, E2, duration};
-//    servoCommands[2] = {2, S3, E3, duration};
-//    ServoEaseMultiple(servoCommands, numServos);
-//
-//    S1 = E1;
-//    S2 = E2;
-//    S3 = E3;
-//
-//    E1 = 0;
-//    E2 = 270;
-//    E3 = 270;
-//
-//    servoCommands[0] = {0, S1, E1, duration};
-//    servoCommands[1] = {1, S2, E2, duration};
-//    servoCommands[2] = {2, S3, E3, duration};
-//    ServoEaseMultiple(servoCommands, numServos);
-//
-//    S1 = E1;
-//    S2 = E2;
-//    S3 = E3;
-//
-//    E1 = 135;
-//    E2 = 135;
-//    E3 = 135;
-//
-//    servoCommands[0] = {0, S1, E1, duration};
-//    servoCommands[1] = {1, S2, E2, duration};
-//    servoCommands[2] = {2, S3, E3, duration};
-//    ServoEaseMultiple(servoCommands, numServos);
-//
-//    S1 = E1;
-//    S2 = E2;
-//    S3 = E3;
-//
-//    E1 = 135;
-//    E2 = 0;
-//    E3 = 270;
-//
-//    servoCommands[0] = {0, S1, E1, duration};
-//    servoCommands[1] = {1, S2, E2, duration};
-//    servoCommands[2] = {2, S3, E3, duration};
-//    ServoEaseMultiple(servoCommands, numServos);
-//
-//    S1 = E1;
-//    S2 = E2;
-//    S3 = E3;
-//
-//    E1 = 135;
-//    E2 = 270;
-//    E3 = 0;
-//
-//    servoCommands[0] = {0, S1, E1, duration};
-//    servoCommands[1] = {1, S2, E2, duration};
-//    servoCommands[2] = {2, S3, E3, duration};
-//    ServoEaseMultiple(servoCommands, numServos);
-//
-//    S1 = E1;
-//    S2 = E2;
-//    S3 = E3;
-//
-//    E1 = 135;
-//    E2 = 135;
-//    E3 = 135;
-//
-//    servoCommands[0] = {0, S1, E1, duration};
-//    servoCommands[1] = {1, S2, E2, duration};
-//    servoCommands[2] = {2, S3, E3, duration};
-    //ServoEaseMultiple(servoCommands, numServos);
+	for(float i = 0; i < 2*M_PI; i += M_PI/18)
+	{
+		servoCommands[0] = {0, 15*sin(i +   0*M_PI/180) + mid, 15*sin(i +  10*M_PI/180) + mid, duration};
+		servoCommands[1] = {1, 15*sin(i + 120*M_PI/180) + mid, 15*sin(i + 130*M_PI/180) + mid, duration};
+		servoCommands[2] = {2, 15*sin(i + 240*M_PI/180) + mid, 15*sin(i + 250*M_PI/180) + mid, duration};
+		ServoEaseMultiple(servoCommands, numServos);
+	}
 
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
