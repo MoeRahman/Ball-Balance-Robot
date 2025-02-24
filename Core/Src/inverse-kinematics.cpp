@@ -54,17 +54,6 @@ MatrixXd inverse_kinematics(int Theta, int Phi, int Pz) {
     return result;
 }
 
-// Function to compute the norms of each column
-VectorXd row_norms(const MatrixXd& mat)
-{
-    VectorXd norms(mat.rows());  // Vector to store row norms
-    for (int i = 0; i < mat.rows(); ++i) {
-        norms(i) = mat.row(i).norm();  // Compute norm of each row
-    }
-
-    return norms;  // Return the first row norm, or modify this as needed
-}
-
 
 void print_mat_uart(UART_HandleTypeDef *huart, const MatrixXd &mat)
 {

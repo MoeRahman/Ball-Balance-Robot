@@ -15,7 +15,6 @@ using namespace Eigen;
 
 
 MatrixXd inverse_kinematics(int Theta, int Phi, int Pz);
-VectorXd row_norms(const MatrixXd &mat);
 void print_mat_uart(UART_HandleTypeDef *huart, const MatrixXd &mat);
 void print_vector_uart(UART_HandleTypeDef *huart, const VectorXd &vect);
 
