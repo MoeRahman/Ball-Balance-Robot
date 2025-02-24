@@ -40,3 +40,8 @@
 .launch
 *.launch
 .cproject
+stm32f429-ball-balance-robot.ioc
+.cproject
+.vscode/settings.json
+.settings/language.settings.xml
+stm32f429-ball-balance-robot.ioc

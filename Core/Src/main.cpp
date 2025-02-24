@@ -20,17 +20,24 @@
 #include "main.h"
 #include "usb_host.h"
 /* Private includes ----------------------------------------------------------*/
+
+/* USER CODE BEGIN Includes */
+#include <iostream>
 #include "pca9685_servo_driver.h"
+#include "inverse-kinematics.h"
+#include "Eigen/Dense"
+
 #include "stdio.h"
 #include "stdbool.h"
 #include "string.h"
-/* USER CODE BEGIN Includes */
-
+#include "sstream"
+#include "cmath"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+using namespace Eigen;
+using namespace std;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -40,7 +47,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define MAX_ANGLE 75
+#define MIN_ANGLE 45
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -78,12 +86,13 @@ static void MX_USART1_UART_Init(void);
 void MX_USB_HOST_Process(void);
 
 /* USER CODE BEGIN PFP */
+void Init_BUTTON(void);
+void Init_LED(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t buf[48];
 /* USER CODE END 0 */
 
 /**
@@ -94,11 +103,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
-
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -124,11 +131,54 @@ int main(void)
   MX_TIM1_Init();
   MX_USART1_UART_Init();
   MX_USB_HOST_Init();
+
   /* USER CODE BEGIN 2 */
+  uint8_t buf[48];
+  Init_BUTTON();
+  Init_LED();
   servo_setup(47); //Set PWM frequency to 50Hz
   HAL_Delay(1000);
-  sprintf((char*)buf, "Application loop\n");
-  HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+
+  // Servos start at 0 deg
+  float duration = 3000;
+  float theta = 0;
+  float phi = 0;
+  float mid = (MAX_ANGLE + MIN_ANGLE)/2.f;
+
+  // Generate inverse kinematics matrix (Assume this function is defined elsewhere)
+  MatrixXd A = inverse_kinematics(theta, phi, 30);  // Example values for Theta, Phi, Pz
+  //print_mat_uart(&huart1, result);
+  VectorXd norms = A.rowwise().norm();
+  //print_vector_uart(&huart1, norm);
+
+  if (A.data() == nullptr) {
+      while(1); // Trap if memory allocation fails
+  }
+
+  ServoEase servoCommands[] = {
+    {0, MIN_ANGLE, 90, duration}, // Servo 0: Move from startAngle to endAngle
+    {1, MIN_ANGLE, 90, duration}, // Servo 1: Move from startAngle to endAngle
+    {2, MIN_ANGLE, 90, duration}  // Servo 2: Move from startAngle to endAngle
+    };
+
+  uint8_t numServos = sizeof(servoCommands) / sizeof(servoCommands[0]);
+
+  ServoEaseMultiple(servoCommands, numServos);
+
+  servoCommands[0] = {0, MAX_ANGLE, MIN_ANGLE, duration};
+  servoCommands[1] = {1, MAX_ANGLE, MIN_ANGLE, duration};
+  servoCommands[2] = {2, MAX_ANGLE, MIN_ANGLE, duration};
+  ServoEaseMultiple(servoCommands, numServos);
+
+  servoCommands[0] = {0, MIN_ANGLE, MAX_ANGLE, duration};
+  servoCommands[1] = {1, MIN_ANGLE, MAX_ANGLE, duration};
+  servoCommands[2] = {2, MIN_ANGLE, MAX_ANGLE, duration};
+  ServoEaseMultiple(servoCommands, numServos);
+
+  servoCommands[0] = {0, MAX_ANGLE, mid, duration};
+  servoCommands[1] = {1, MAX_ANGLE, 15*sin(120*M_PI/180) + mid, duration};
+  servoCommands[2] = {2, MAX_ANGLE, 15*sin(240*M_PI/180) + mid, duration};
+  ServoEaseMultiple(servoCommands, numServos);
 
   /* USER CODE END 2 */
 
@@ -136,17 +186,48 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    setServoAngle(0, 0);
-    setServoAngle(1, 0);
-    setServoAngle(2, 0);
-    HAL_Delay(500);
-	
+	duration = 50;
+
+	for(float i = 0; i < 2*M_PI; i += M_PI/18)
+	{
+		servoCommands[0] = {0, 15*sin(i +   0*M_PI/180) + mid, 15*sin(i +  10*M_PI/180) + mid, duration};
+		servoCommands[1] = {1, 15*sin(i + 120*M_PI/180) + mid, 15*sin(i + 130*M_PI/180) + mid, duration};
+		servoCommands[2] = {2, 15*sin(i + 240*M_PI/180) + mid, 15*sin(i + 250*M_PI/180) + mid, duration};
+		ServoEaseMultiple(servoCommands, numServos);
+	}
+
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+
+
+/**
+ * @brief Initialize User Button
+ * 
+ */
+void Init_BUTTON(void)
+{
+  GPIO_InitTypeDef BUTTON;
+  BUTTON.Pin = GPIO_PIN_0;
+  BUTTON.Mode = GPIO_MODE_INPUT;
+  BUTTON.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &BUTTON);
+}
+
+/**
+ * @brief Initialize LED Input Pin
+ * 
+ */
+void Init_LED(void)
+{
+  GPIO_InitTypeDef GREEN_LED;
+  GREEN_LED.Pin = GPIO_PIN_13;
+  GREEN_LED.Mode = GPIO_MODE_OUTPUT_PP;
+  HAL_GPIO_Init(GPIOG, &GREEN_LED);
 }
 
 /**

@@ -19,6 +19,7 @@ extern UART_HandleTypeDef huart1;
 
 uint8_t buffer[48];
 
+
 /**
  * @brief Set the Bit object
  * 
@@ -36,6 +37,7 @@ void setBit(uint8_t Register, uint8_t Bit, uint8_t Value)
     HAL_I2C_Mem_Write(&hi2c3, PCA9685_I2C_ADDRESS, Register, 1, &readValue, 1, HAL_MAX_DELAY);
     HAL_Delay(1);
 }
+
 
 /**
  * @brief Set the PWM frequency
@@ -55,6 +57,7 @@ void setPWMFreq(uint16_t frequency)
   setBit(PCA9685_MODE1, PCA9685_MODE1_SLEEP_BIT, 0);
   setBit(PCA9685_MODE1, PCA9685_MODE1_RESTART_BIT, 1);
 }
+
 
 /**
  * @brief  Initializes PWM Driver
@@ -77,37 +80,101 @@ void servo_setup(uint16_t frequency)
     HAL_UART_Transmit(&huart1, buffer, strlen((char*)buffer), HAL_MAX_DELAY);
 }
 
+
 /**
  * @brief Set PWM Duty Cycle by controlling the on time and off time
  * 
- * @param Channel 
- * @param OnTime 
- * @param OffTime 
+ * @param channel Servo channel 0-15
+ * @param onTime  Duration of high signal of PWM value between 0 and 4095
+ * @param offTime Duration of low signal of PWM value between 0 and 4095
  */
-void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime)
+void setServoPWM(uint16_t channel, uint16_t onTime, uint16_t offTime)
 {
     uint8_t registerAddress;
     uint8_t PWM[4];
-    registerAddress = PCA9685_LED0_ON_L + (4 * Channel);
+    registerAddress = PCA9685_LED0_ON_L + (4 * channel);
 
-    PWM[0] = OnTime & 0xFF;
-    PWM[1] = OnTime>>8;
-    PWM[2] = OffTime & 0xFF;
-    PWM[3] = OffTime>>8;
+    PWM[0] = onTime & 0xFF;
+    PWM[1] = onTime>>8;
+    PWM[2] = offTime & 0xFF;
+    PWM[3] = offTime>>8;
 
     HAL_I2C_Mem_Write(&hi2c3, PCA9685_I2C_ADDRESS, registerAddress, 1, PWM, 4, HAL_MAX_DELAY);
 }
 
+
 /**
  * @brief Set the Angle of Servo [deg]
  * 
- * @param Channel 
- * @param Angle 
+ * @param channel Servo channel 0-15 
+ * @param angle   Set servo angle[deg] 
  */
-void setServoAngle(uint8_t Channel, float Angle)
+void setServoAngle(uint8_t channel, float angle)
 {
     float Value;
+
     // 12 bit resolution @PWM frequency 50Hz == 20ms Period
-    Value = 4095 * (((Angle/180) + 1)/20);
-    setServoPWM(Channel, 0, (uint16_t)Value);
+    Value = ((angle/210)*474 + 73);
+    setServoPWM(channel, 0, (uint16_t)Value);
+}
+
+/**
+ * @brief Control multiple servos using ServoEasing func
+ * 
+ * @param servos 
+ * @param numServos 
+ */
+void ServoEaseMultiple(ServoEase servos[], uint8_t numServos)
+{
+    uint32_t globalStartTime = HAL_GetTick();
+    uint32_t elapsedTime = 0;
+
+    // Set individual start times
+    for (uint8_t i = 0; i < numServos; i++) {
+        servos[i].startTime = globalStartTime;
+    }
+
+    while (elapsedTime <= servos[0].duration) {
+        elapsedTime = HAL_GetTick() - globalStartTime;
+
+        for (uint8_t i = 0; i < numServos; i++) {
+            float t = (float)elapsedTime;
+            float duration = servos[i].duration;
+
+            // Ensure the easing function only runs within duration limits
+            if (t <= duration) {
+                float easedAngle = ServoEaseTo(servos[i].startAngle, servos[i].endAngle, duration, t);
+                setServoAngle(servos[i].channel, easedAngle);
+            } else {
+                setServoAngle(servos[i].channel, servos[i].endAngle); // Ensure it reaches final position
+            }
+        }
+
+        HAL_Delay(10); // Smooth movement update
+    }
+}
+
+/**
+ * @brief Using cubic interpolation to ease the 
+ *        servo out of start angle and ease into end angle
+ * 
+ * @param theta_s Start angle[deg]
+ * @param theta_e End angle[deg]
+ * @param tf      Duration of motion from start to end angle
+ * @param t       SysTick timer providing elapsed program time
+ * @return float 
+ */
+float ServoEaseTo(float theta_s, float theta_e, float tf, float t) 
+{
+    // Cubic polynomial coefficients
+    float a0 = theta_s;
+    float a1 = 0;
+    float a2 = 3 / (tf * tf) * (theta_e - theta_s);
+    float a3 = -2 / (tf * tf * tf) * (theta_e - theta_s);
+
+    // Ensure `t` does not exceed `tf`
+    if (t > tf) t = tf;
+
+    // Compute eased angle
+    return a0 + a1 * t + a2 * t * t + a3 * t * t * t;
 }
