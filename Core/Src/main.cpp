@@ -1,7 +1,7 @@
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
-  * @file           : main.c
+  * @file           : main.cpp
   * @brief          : Main program body
   ******************************************************************************
   * @attention
@@ -125,18 +125,22 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
-  init();
+  servo_setup(47); //Set PWM frequency to 50Hz
   HAL_Delay(1000);
-  sprintf((char*)buf, "application loop\n");
+  sprintf((char*)buf, "Application loop\n");
   HAL_UART_Transmit(&huart1, buf, strlen((char*)buf), HAL_MAX_DELAY);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
-    
+    setServoAngle(0, 0);
+    setServoAngle(1, 0);
+    setServoAngle(2, 0);
+    HAL_Delay(500);
+	
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 

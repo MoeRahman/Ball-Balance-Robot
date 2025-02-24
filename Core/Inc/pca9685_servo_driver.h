@@ -5,8 +5,14 @@
  *      Author: Muhtasim Rahman
  */ 
 
+#include <stdint.h>
+
 #ifndef INC_PCA9685_SERVO_DRIVER_H_
 #define INC_PCA9685_SERVO_DRIVER_H_
+
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 // REGISTER ADDRESSES
 #define PCA9685_MODE1 0x00      /**< Mode Register 1 */
@@ -43,21 +49,26 @@
 #define MODE2_OCH 0x08    /**< Outputs change on ACK vs STOP */
 #define MODE2_INVRT 0x10  /**< Output logic state inverted */
 
-#define PCA9685_I2C_ADDRESS 0x40      /**< Default PCA9685 I2C Slave Address */
+#define PCA9685_I2C_ADDRESS 0x80      /**< Default PCA9685 I2C Slave Address */
 #define FREQUENCY_OSCILLATOR 25000000 /**< Int. osc. frequency in datasheet */
 
 #define PCA9685_PRESCALE_MIN 3   /**< minimum prescale value */
 #define PCA9685_PRESCALE_MAX 255 /**< maximum prescale value */
+#define PCA9685_MODE1_SLEEP_BIT      4
+#define PCA9685_MODE1_AI_BIT         5
+#define PCA9685_MODE1_RESTART_BIT    7
 
 // Setup driver
-void init();
-void reset();
+void servo_setup(uint16_t frequency);
 // Update & Read PWM Frequency
-void setPWMFreq();
-void getPWMFreq();
-// Update & Read PWM signal
-void setPWM();
-void getPWM();
+void setPWMFreq(uint16_t frequncy);
+// Update  PWM signal
+void setServoPWM(uint16_t Channel, uint16_t OnTime, uint16_t OffTime);
+// Update servo angle
+void setServoAngle(uint8_t Channel, float Angle);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* INC_PCA9685_SERVO_DRIVER_H_ */
